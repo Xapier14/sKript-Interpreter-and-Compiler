@@ -7,7 +7,7 @@
     <ProjectGuid>{77C1F66F-4BF0-47F9-B926-AA4646769838}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Skript_Interpreter</RootNamespace>
-    <AssemblyName>Skript-Interpreter</AssemblyName>
+    <AssemblyName>sKript Interpreter &amp; Compiler v0.2</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -22,8 +22,8 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>0.2.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>

@@ -11,13 +11,14 @@ using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
 
 /* About
- *          sKript Interpreter v0.1
+ *          sKript Interpreter v0.2
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not distribute as raw source code.
  *      Author: Lance Crisang
  *      
  *      Version Log:
- *      0.1 - 1/9/2018 - Added Variable Support and simple sysop functions(unfinished).
+ *      0.2 - 1/18/2018 - Added Partial Variable Support (Can set and get strings) may have some bugs, havent tested yet...
+ *      0.1 - 1/9/2018 - Added Variable Support(Can't Store or Get yet...) and simple sysop functions(unfinished).
  *      
  */
  /* Notes
@@ -49,47 +50,49 @@ namespace Skript_Interpreter
             LinkedList<string> dic = Dictionary.MakeDictionary();
             bool result = false;
             string func = strop.GetWord(line, 1);
-            if (Dictionary.CheckWord(dic, func) || Dictionary.IsComment(line))
-            {
-                switch (func.ToLower())
-                { //Input Commands here and to MakeDictionary().
-                    case "sysout":
-                        string msg = strop.GetWord(line, 2);
-                        if (strop.HasSubstring(msg, '"'.ToString()))
-                        {
-                            msg = strop.TrimEnds(msg, 1);
-                        }
-                        msg = v.SubstituteVars(string_table, int_table, msg);
-                        sysop.sysout(msg);
-                        break;
-                    case "sysout.":
-                        sysop.sysout("");
-                        break;
-                    case "title":
-                        sysop.title(strop.strdiv(line,func));
-                        break;
-                    case "beep":
-                        string amount = strop.GetWord(line, 2);
-                        sysop.beep(Convert.ToInt32(amount));
-                        break;
-                    case "pause":
+            if (!line.StartsWith("//")){
+                if (Dictionary.CheckWord(dic, func) || Dictionary.IsComment(line))
+                {
+                    switch (func.ToLower())
+                    { //Input Commands here and to MakeDictionary().
+                        case "sysout":
+                            string msg = strop.GetWord(line, 2);
+                            if (strop.HasSubstring(msg, '"'.ToString()))
+                            {
+                                msg = strop.TrimEnds(msg, 1);
+                            }
+                            msg = v.SubstituteVars(string_table, int_table, msg);
+                            sysop.sysout(msg);
+                            break;
+                        case "sysout.":
+                            sysop.sysout("");
+                            break;
+                        case "title":
+                            sysop.title(strop.strdiv(line, func));
+                            break;
+                        case "beep":
+                            string amount = strop.GetWord(line, 2);
+                            sysop.beep(Convert.ToInt32(amount));
+                            break;
+                        case "pause":
 
-                        break;
-                    case "strint":
-                        string var_name = strop.GetWord(line, 2);
-                        int value = Convert.ToInt32(strop.GetWord(line, 3));
-                        Variables.StoreInt(int_table, var_name, value);
-                        break;
-                    case "strstr":
-                        string var = strop.GetWord(line, 2);
-                        string valuee = strop.GetWord(line, 3);
-                        Variables.StoreString(string_table, var, valuee);
-                        break;
+                            break;
+                        case "setint":
+                            string var_name = strop.GetWord(line, 2);
+                            int value = Convert.ToInt32(strop.GetWord(line, 3));
+                            Variables.StoreInt(int_table, var_name, value);
+                            break;
+                        case "setstr":
+                            string var = strop.GetWord(line, 2);
+                            string valuee = strop.GetWord(line, 3);
+                            Variables.StoreString(string_table, var, valuee);
+                            break;
+                    }
+                    result = true;
+                } else
+                {
+                    //sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
                 }
-                result = true;
-            } else
-            {
-                sysop.sysout("Command '"+strop.GetWord(line,1)+"' not recognized...");
             }
             return result;
         }
@@ -237,8 +240,8 @@ namespace Skript_Interpreter
             LinkedList<string> dic = new LinkedList<string>();
             //Add commands here.
             dic.AddFirst("getint");
-            dic.AddFirst("strint");
-            dic.AddFirst("strstr");
+            dic.AddFirst("setint");
+            dic.AddFirst("setstr");
             dic.AddFirst("sysout");
             dic.AddFirst("title");
             dic.AddFirst("beep");
@@ -269,7 +272,7 @@ namespace Skript_Interpreter
             string msg = sentence;
             if (strop.HasSubstring(sentence, '"'.ToString()))
             {
-                msg = strop.TrimEnds(sentence, 1);
+                msg = msg.Replace('"'.ToString(),"");
             }
             return msg;
         }
@@ -281,14 +284,19 @@ namespace Skript_Interpreter
             string ret = str;
             int now = strop.GetWordCount(str);
             string word = "";
+            //bool word_found = false;
             for (int i = 1; i <= now; i++)
             {
-                word=strop.GetWord(str, i);
-                if (StringExists(string_table, str))
+                //word_found = false;
+                word=strop.GetWord(Tools.RemoveQuotes(str), i);
+                if (StringExists(string_table, word))
                 {
+                    //word_found = true;
                     ret = ret.Replace(word, GetString(string_table,VarName(word)));
                 }
+                //sysop.sysout("[Debug_SubVars] @Word: " + i.ToString() + ", Word: " + word + ", String: " + ret + ", Var Exist?: "+word_found.ToString()+".");
             }
+            ret = Tools.RemoveQuotes(ret);
             return ret;
         }
         public static bool VarExists(IDictionary<string,int> int_table, IDictionary<string,string> string_table, string var)
@@ -327,11 +335,13 @@ namespace Skript_Interpreter
         }
         public static bool StringExists(IDictionary<string, string> string_table, string raw_var_name)
         {
+
             bool ret = false;
-            if (raw_var_name.StartsWith("@") & string_table.ContainsKey(raw_var_name.Substring(1)))
+            if (raw_var_name.StartsWith("@") & string_table.ContainsKey(raw_var_name.Remove(0,1)))
             {
                 ret = true;
             }
+            //sysop.sysout("[Debug_StrExist] VarName: " + raw_var_name + ", RealName: " + raw_var_name.Remove(0,1) + ", StartsWith?: " + raw_var_name.StartsWith("@").ToString() + ", VarFound?: " + string_table.ContainsKey(raw_var_name.Remove(0, 1)) + ".");
             return ret;
         }
         public static string GetString(IDictionary<string,string> string_table,string var_name)
@@ -354,6 +364,7 @@ namespace Skript_Interpreter
                 string_table.Remove(var_name);
             }
             string_table.Add(var_name, value);
+            //sysop.sysout("[Debug_StoreString] key_exist: " + string_table.ContainsKey(var_name).ToString() + ", value: " + value);
         }
         public static void StoreInt(IDictionary<string, int> int_table, string var_name, int value)
         {
