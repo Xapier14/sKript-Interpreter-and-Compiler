@@ -11,12 +11,13 @@ using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
 
 /* About
- *          sKript Interpreter v0.2
+ *          sKript Interpreter v0.3
  *      Copyright(c) 2018 - Lance Crisang
- *      Do not distribute as raw source code.
+ *      Do not redistribute source code on other websites.
  *      Author: Lance Crisang
  *      
  *      Version Log:
+ *      0.3 - 1/19/2028 - Added Int Variables, Now supports string and int variables!
  *      0.2 - 1/18/2018 - Added Partial Variable Support (Can set and get strings) may have some bugs, havent tested yet...
  *      0.1 - 1/9/2018 - Added Variable Support(Can't Store or Get yet...) and simple sysop functions(unfinished).
  *      
@@ -61,17 +62,17 @@ namespace Skript_Interpreter
                             {
                                 msg = strop.TrimEnds(msg, 1);
                             }
-                            msg = v.SubstituteVars(string_table, int_table, msg);
+                            msg = v.SubstituteVars(string_table, int_table, msg, 3);
                             sysop.sysout(msg);
                             break;
                         case "sysout.":
                             sysop.sysout("");
                             break;
                         case "title":
-                            sysop.title(strop.strdiv(line, func));
+                            sysop.title(v.SubstituteVars(string_table,int_table,t.RemoveQuotes(strop.strdiv(line, func)),3));
                             break;
                         case "beep":
-                            string amount = strop.GetWord(line, 2);
+                            string amount = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1);
                             sysop.beep(Convert.ToInt32(amount));
                             break;
                         case "pause":
@@ -279,7 +280,7 @@ namespace Skript_Interpreter
     }
     class Variables
     {
-        public static string SubstituteVars(IDictionary<string, string> string_table, IDictionary<string, int> int_table, string str)
+        public static string SubstituteVars(IDictionary<string, string> string_table, IDictionary<string, int> int_table, string str, int type)
         {
             string ret = str;
             int now = strop.GetWordCount(str);
@@ -289,10 +290,29 @@ namespace Skript_Interpreter
             {
                 //word_found = false;
                 word=strop.GetWord(Tools.RemoveQuotes(str), i);
-                if (StringExists(string_table, word))
+                if (VarExists(int_table, string_table, word))
                 {
                     //word_found = true;
-                    ret = ret.Replace(word, GetString(string_table,VarName(word)));
+                    switch (type)
+                    {
+                        case 1:
+                            ret = ret.Replace(word, GetInt(int_table, VarName(word)).ToString());
+                            break;
+                        case 2:
+                            ret = ret.Replace(word, GetString(string_table, VarName(word)));
+                            break;
+                        case 3:
+                            if (IntExists(int_table, word))
+                            {
+                                ret = ret.Replace(word, GetInt(int_table, VarName(word)).ToString());
+                            }
+                            if (StringExists(string_table, word))
+                            {
+                                ret = ret.Replace(word, GetString(string_table, VarName(word)));
+                            }
+                            break;
+                    }
+                    
                 }
                 //sysop.sysout("[Debug_SubVars] @Word: " + i.ToString() + ", Word: " + word + ", String: " + ret + ", Var Exist?: "+word_found.ToString()+".");
             }
