@@ -7,7 +7,7 @@
     <ProjectGuid>{77C1F66F-4BF0-47F9-B926-AA4646769838}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Skript_Interpreter</RootNamespace>
-    <AssemblyName>sKript Interpreter &amp; Compiler v0.2</AssemblyName>
+    <AssemblyName>sk_interp</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
