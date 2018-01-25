@@ -9,15 +9,15 @@ using v = Skript_Interpreter.Variables;
 using dict = Skript_Interpreter.Dictionary;
 using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
-
 /* About
- *          sKript Interpreter v0.3
+ *          sKript Interpreter v0.4
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
  *      Author: Lance Crisang
  *      
  *      Version Log:
- *      0.3 - 1/19/2028 - Added Int Variables, Now supports string and int variables!
+ *      0.4 - 1/24/2018 - Added Permissions, now needs permissions for certain functions.
+ *      0.3 - 1/19/2018 - Added Int Variables, Now supports string and int variables!
  *      0.2 - 1/18/2018 - Added Partial Variable Support (Can set and get strings) may have some bugs, havent tested yet...
  *      0.1 - 1/9/2018 - Added Variable Support(Can't Store or Get yet...) and simple sysop functions(unfinished).
  *      
@@ -46,7 +46,7 @@ namespace Skript_Interpreter
             }
             return result;
         }
-        public static bool InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table)
+        public static bool InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table, IDictionary<int, bool> permissions)
         {
             LinkedList<string> dic = Dictionary.MakeDictionary();
             bool result = false;
@@ -54,45 +54,71 @@ namespace Skript_Interpreter
             if (!line.StartsWith("//")){
                 if (Dictionary.CheckWord(dic, func) || Dictionary.IsComment(line))
                 {
-                    switch (func.ToLower())
-                    { //Input Commands here and to MakeDictionary().
-                        case "sysout":
-                            string msg = strop.GetWord(line, 2);
-                            if (strop.HasSubstring(msg, '"'.ToString()))
-                            {
-                                msg = strop.TrimEnds(msg, 1);
-                            }
-                            msg = v.SubstituteVars(string_table, int_table, msg, 3);
-                            sysop.sysout(msg);
-                            break;
-                        case "sysout.":
-                            sysop.sysout("");
-                            break;
-                        case "title":
-                            sysop.title(v.SubstituteVars(string_table,int_table,t.RemoveQuotes(strop.strdiv(line, func)),3));
-                            break;
-                        case "beep":
-                            string amount = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1);
-                            sysop.beep(Convert.ToInt32(amount));
-                            break;
-                        case "pause":
+                    try
+                    {
+                        switch (func.ToLower())
+                        { //Input Commands here and to MakeDictionary().
+                            case "setperm":
+                                string perm = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
+                                string val = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
+                                Permissions.SetPermission(Convert.ToInt32(perm), Convert.ToBoolean(Convert.ToInt32(val)), permissions);
+                                sysop.sysout("[Permissions] Set Permission '" + perm + "' to " + val + ".");
+                                break;
+                            case "sysout":
+                                string msg = strop.GetWord(line, 2);
+                                if (strop.HasSubstring(msg, '"'.ToString()))
+                                {
+                                    msg = strop.TrimEnds(msg, 1);
+                                }
+                                msg = v.SubstituteVars(string_table, int_table, msg, 3, permissions);
+                                sysop.sysout(msg);
+                                break;
+                            case "sysout.":
+                                sysop.sysout("");
+                                break;
+                            case "title":
+                                sysop.title(v.SubstituteVars(string_table, int_table, t.RemoveQuotes(strop.strdiv(line, func)), 3, permissions));
+                                break;
+                            case "beep":
+                                string amount = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
+                                sysop.beep(Convert.ToInt32(amount));
+                                break;
+                            case "pause":
 
-                            break;
-                        case "setint":
-                            string var_name = strop.GetWord(line, 2);
-                            int value = Convert.ToInt32(strop.GetWord(line, 3));
-                            Variables.StoreInt(int_table, var_name, value);
-                            break;
-                        case "setstr":
-                            string var = strop.GetWord(line, 2);
-                            string valuee = strop.GetWord(line, 3);
-                            Variables.StoreString(string_table, var, valuee);
-                            break;
+                                break;
+                            case "setint":
+                                if (Permissions.CheckPermission(Permissions.Variables, permissions))
+                                {
+                                    string var_name = strop.GetWord(line, 2);
+                                    int value = Convert.ToInt32(strop.GetWord(line, 3));
+                                    Variables.StoreInt(int_table, var_name, value);
+                                }
+                                else
+                                {
+                                    sysop.sysout("[Permissions] Can't run command 'setint' due to invalid or unset permissions.");
+                                }
+                                break;
+                            case "setstr":
+                                if (Permissions.CheckPermission(Permissions.Variables, permissions))
+                                {
+                                    string var = strop.GetWord(line, 2);
+                                    string valuee = strop.GetWord(line, 3);
+                                    Variables.StoreString(string_table, var, valuee);
+                                }
+                                else
+                                {
+                                    sysop.sysout("[Permissions] Can't run command 'setstr' due to invalid or unset permissions.");
+                                }
+                                break;
+                        }
+                    } catch (Exception ex) {
+                        sysop.sysout("[Error] Error executing '"+func.ToLower()+"'. Exception: '" + ex.ToString()+"'.");
+                        sysop.sysout("[Error] Faulty line: '" + line + "'.");
                     }
                     result = true;
                 } else
                 {
-                    //sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
+                    sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
                 }
             }
             return result;
@@ -132,6 +158,15 @@ namespace Skript_Interpreter
         public static void end(int ecode)
         {
             Environment.Exit(ecode);
+        }
+    }
+    class FileRead
+    {
+        public static string GetLine(string file, int line)
+        {
+            string ret = "";
+
+            return ret;
         }
     }
     class FileWrite
@@ -244,6 +279,9 @@ namespace Skript_Interpreter
             dic.AddFirst("setint");
             dic.AddFirst("setstr");
             dic.AddFirst("sysout");
+            dic.AddFirst("sysout.");
+            dic.AddFirst("setperm");
+            dic.AddFirst("setflag");
             dic.AddFirst("title");
             dic.AddFirst("beep");
             dic.AddFirst("pause");
@@ -280,41 +318,44 @@ namespace Skript_Interpreter
     }
     class Variables
     {
-        public static string SubstituteVars(IDictionary<string, string> string_table, IDictionary<string, int> int_table, string str, int type)
+        public static string SubstituteVars(IDictionary<string, string> string_table, IDictionary<string, int> int_table, string str, int type, IDictionary<int, bool> p_table)
         {
             string ret = str;
-            int now = strop.GetWordCount(str);
-            string word = "";
-            //bool word_found = false;
-            for (int i = 1; i <= now; i++)
+            if (Permissions.CheckPermission(Permissions.Variables, p_table))
             {
-                //word_found = false;
-                word=strop.GetWord(Tools.RemoveQuotes(str), i);
-                if (VarExists(int_table, string_table, word))
+                int now = strop.GetWordCount(str);
+                string word = "";
+                //bool word_found = false;
+                for (int i = 1; i <= now; i++)
                 {
-                    //word_found = true;
-                    switch (type)
+                    //word_found = false;
+                    word = strop.GetWord(Tools.RemoveQuotes(str), i);
+                    if (VarExists(int_table, string_table, word))
                     {
-                        case 1:
-                            ret = ret.Replace(word, GetInt(int_table, VarName(word)).ToString());
-                            break;
-                        case 2:
-                            ret = ret.Replace(word, GetString(string_table, VarName(word)));
-                            break;
-                        case 3:
-                            if (IntExists(int_table, word))
-                            {
+                        //word_found = true;
+                        switch (type)
+                        {
+                            case 1:
                                 ret = ret.Replace(word, GetInt(int_table, VarName(word)).ToString());
-                            }
-                            if (StringExists(string_table, word))
-                            {
+                                break;
+                            case 2:
                                 ret = ret.Replace(word, GetString(string_table, VarName(word)));
-                            }
-                            break;
+                                break;
+                            case 3:
+                                if (IntExists(int_table, word))
+                                {
+                                    ret = ret.Replace(word, GetInt(int_table, VarName(word)).ToString());
+                                }
+                                if (StringExists(string_table, word))
+                                {
+                                    ret = ret.Replace(word, GetString(string_table, VarName(word)));
+                                }
+                                break;
+                        }
+
                     }
-                    
+                    //sysop.sysout("[Debug_SubVars] @Word: " + i.ToString() + ", Word: " + word + ", String: " + ret + ", Var Exist?: "+word_found.ToString()+".");
                 }
-                //sysop.sysout("[Debug_SubVars] @Word: " + i.ToString() + ", Word: " + word + ", String: " + ret + ", Var Exist?: "+word_found.ToString()+".");
             }
             ret = Tools.RemoveQuotes(ret);
             return ret;
@@ -406,6 +447,48 @@ namespace Skript_Interpreter
         {
             string_table.Clear();
             int_table.Clear();
+        }
+    }
+    class Flags
+    {
+
+    }
+    class Permissions
+    {
+        public static int SysOp = 00;
+        public static int FileWrite = 01;
+        public static int FileRead = 02;
+        public static int Variables = 03;
+        /*
+         *           Permission List
+         *                 v1
+         *      |===============|=======|
+         *      | Permission    | Index |
+         *      | ------------- | ----- |
+         *      | SystemOps     | 00    |
+         *      | FileWrite     | 01    |
+         *      | FileRead      | 02    |
+         *      | Variables     | 03    |
+         *      |===============|=======|
+         *      More may be added in the future.
+         *      
+         *      SystemOperations - These do not include SysOut, SysClear, and Title functions. These however, incude
+         *                          SysRun, and SysShell functions
+         */
+        public static void SetPermission(int permission, bool value, IDictionary<int, bool> p_table)
+        {
+            if (p_table.ContainsKey(permission))
+            {
+                p_table.Remove(permission);
+            }
+            p_table.Add(permission, value);
+            sysop.sysout("[Debug] Permissions Post-Change: Type=" + permission.ToString() + ", Value=" + CheckPermission(permission, p_table).ToString() + ".");
+        }
+        public static bool CheckPermission(int permission, IDictionary<int, bool> p_table)
+        {
+            bool ret = false;
+            p_table.TryGetValue(permission, out ret);
+            return ret;
         }
     }
 }

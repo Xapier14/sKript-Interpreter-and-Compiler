@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 /*
- * Skript Interpreter
- * Version 0.1
+ * Skript Interpreter CMD Interface & Line Reader
+ * Version 0.4
  * 
- * Features:
- *  -Can read files now line by line.
- *  -count how many lines in a file.
- *  -easy access to a file line.
- * 
- * Planned Features:
- *  -Variable support, string table and int table.
- *  -Compiling from sKript -> C# -> exe.
-*/
+ */
 namespace Skript_Interpreter
 {
+    class Splash
+    {
+        public static void Show()
+        {
+            Console.Clear();
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            string ver = fvi.FileVersion;
+            Console.WriteLine("sKript Interpreter v" + ver + ", Copyright (c) 2018 - Lance Crisang");
+            Console.WriteLine("");
+        }
+    }
     class Interp
     {
         public static IDictionary<string, string> MakeStringTable()
@@ -26,6 +30,12 @@ namespace Skript_Interpreter
         public static IDictionary<string, int> MakeIntTable()
         {
             IDictionary<string, int> table = new Dictionary<string, int>();
+            table.Clear();
+            return table;
+        }
+        public static IDictionary<int, bool> MakePermissions()
+        {
+            IDictionary<int, bool> table = new Dictionary<int, bool>();
             table.Clear();
             return table;
         }
@@ -79,10 +89,10 @@ namespace Skript_Interpreter
             sysout("");
         }
 
-        static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table)
+        static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions)
         {
             //Parse and interpret lines here.
-            if (Interpreter.InterpretCommand(line,s_table,i_table))
+            if (Interpreter.InterpretCommand(line,s_table,i_table,permissions))
             {
 
             } else
@@ -93,9 +103,11 @@ namespace Skript_Interpreter
         }
         static void Main(string[] args)
         {
+            Splash.Show();
             //Ask for File
             IDictionary<string, int> i_t = Interp.MakeIntTable();
             IDictionary<string, string> s_t = Interp.MakeStringTable();
+            IDictionary<int, bool> perms = Interp.MakePermissions();
             string file = "";
             bool arguments = false;
             int alength = args.Length;
@@ -138,7 +150,7 @@ namespace Skript_Interpreter
                         curline = loadFile(file)[interp];
                         //sysout(curline);
                         //sysout(curline);
-                        lineinterpret(curline,s_t,i_t);
+                        lineinterpret(curline,s_t,i_t,perms);
                         interp++;
                     }
                     sysout("");
