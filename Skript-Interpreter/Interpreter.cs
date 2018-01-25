@@ -13,22 +13,22 @@ using fw = Skript_Interpreter.FileWrite;
  *          sKript Interpreter v0.4
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
+ *      GitHub: https://github.com/Xapier14/sKript-Interpreter-and-Compiler
  *      Author: Lance Crisang
  *      
  *      Version Log:
+ *      0.4ext - 1/25/2018 - Fixed Typos, setperm now works properly. Added Flags.(Commands not yet influenced by flags)
  *      0.4 - 1/24/2018 - Added Permissions, now needs permissions for certain functions.
  *      0.3 - 1/19/2018 - Added Int Variables, Now supports string and int variables!
  *      0.2 - 1/18/2018 - Added Partial Variable Support (Can set and get strings) may have some bugs, havent tested yet...
  *      0.1 - 1/9/2018 - Added Variable Support(Can't Store or Get yet...) and simple sysop functions(unfinished).
  *      
  */
- /* Notes
- *      To Do:
- *          -Add VarSubstitute();
- *          -Finish Variable table functions;
- *          -Math functions;
- *          -Int to String & vice-versa function.
- */
+/* Notes
+*      To Do:
+*          -Flag Implementation
+*          -Math functions;
+*/
 
 namespace Skript_Interpreter
 {
@@ -46,7 +46,7 @@ namespace Skript_Interpreter
             }
             return result;
         }
-        public static bool InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table, IDictionary<int, bool> permissions)
+        public static bool InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
         {
             LinkedList<string> dic = Dictionary.MakeDictionary();
             bool result = false;
@@ -62,7 +62,19 @@ namespace Skript_Interpreter
                                 string perm = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
                                 string val = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
                                 Permissions.SetPermission(Convert.ToInt32(perm), Convert.ToBoolean(Convert.ToInt32(val)), permissions);
-                                sysop.sysout("[Permissions] Set Permission '" + perm + "' to " + val + ".");
+                                if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                {
+                                    sysop.sysout("[Permissions] Set Permission '" + perm + "' to " + val + ".");
+                                }
+                                break;
+                            case "setflag":
+                                string flag = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
+                                string fval = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
+                                Flags.SetFlag(Convert.ToInt32(flag), Convert.ToBoolean(Convert.ToInt32(fval)), flags);
+                                if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                {
+                                    sysop.sysout("[Flags] Set Flag '" + flag + "' to " + fval + ".");
+                                }
                                 break;
                             case "sysout":
                                 string msg = strop.GetWord(line, 2);
@@ -95,7 +107,10 @@ namespace Skript_Interpreter
                                 }
                                 else
                                 {
-                                    sysop.sysout("[Permissions] Can't run command 'setint' due to invalid or unset permissions.");
+                                    if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                    {
+                                        sysop.sysout("[Permissions] Can't run command 'setint' due to invalid or unset permissions.");
+                                    }
                                 }
                                 break;
                             case "setstr":
@@ -107,18 +122,27 @@ namespace Skript_Interpreter
                                 }
                                 else
                                 {
-                                    sysop.sysout("[Permissions] Can't run command 'setstr' due to invalid or unset permissions.");
+                                    if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                    {
+                                        sysop.sysout("[Permissions] Can't run command 'setstr' due to invalid or unset permissions.");
+                                    }
                                 }
                                 break;
                         }
                     } catch (Exception ex) {
-                        sysop.sysout("[Error] Error executing '"+func.ToLower()+"'. Exception: '" + ex.ToString()+"'.");
-                        sysop.sysout("[Error] Faulty line: '" + line + "'.");
+                        if (!Flags.CheckFlag(Flags.SuppressErrorMsg, flags))
+                        {
+                            sysop.sysout("[Error] Error executing '" + func.ToLower() + "'. Exception: '" + ex.ToString() + "'.");
+                            sysop.sysout("[Error] Faulty line: '" + line + "'.");
+                        }
                     }
                     result = true;
                 } else
                 {
-                    sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
+                    if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                    {
+                        sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
+                    }
                 }
             }
             return result;
@@ -451,14 +475,61 @@ namespace Skript_Interpreter
     }
     class Flags
     {
+        public const int SuppressErrorMsg = 00;
+        public const int EnableLogging = 01;
+        public const int DisableInput = 02;
+        public const int AutoCompile = 03;
+        public const int Experimental = 04;
+        public const int SuppressDebugMsg = 05;
+        public const int DisableInt = 06;
+        public const int DisableString = 07;
+        public const int DisableVars = 08;
+        public const int DisableBeep = 09;
+        public const int AutoSearchEx = 10;
 
+        public static void SetDefaultFlags(IDictionary<int, bool> flag_table)
+        {
+            /*
+             * Flags
+             * 00 - Suppress Error Messages
+             * 01 - Enable logging
+             * 02 - Disable Input
+             * 03 - Auto-Compile
+             * 04 - Experimental Features
+             * 05 - Suppress Debug Messages
+             * 06 - Disable Int Table
+             * 07 - Disable String Table
+             * 08 - Disable Variable Tables
+             * 09 - Disable Beep function
+             * 10 - Auto Exception Search to StackExchange
+             */
+            flag_table.Clear();
+            flag_table.Add(00, true);
+            flag_table.Add(05, true);
+            flag_table.Add(09, true);
+            flag_table.Add(04, true);
+        }
+        public static void SetFlag(int flag, bool value, IDictionary<int, bool> flag_table)
+        {
+            if (flag_table.ContainsKey(flag))
+            {
+                flag_table.Remove(flag);
+            }
+            flag_table.Add(flag, value);
+        }
+        public static bool CheckFlag(int flag, IDictionary<int, bool> flag_table)
+        {
+            bool ret = false;
+            flag_table.TryGetValue(flag, out ret);
+            return ret;
+        }
     }
     class Permissions
     {
-        public static int SysOp = 00;
-        public static int FileWrite = 01;
-        public static int FileRead = 02;
-        public static int Variables = 03;
+        public const int SysOp = 00;
+        public const int FileWrite = 01;
+        public const int FileRead = 02;
+        public const int Variables = 03;
         /*
          *           Permission List
          *                 v1
@@ -482,7 +553,7 @@ namespace Skript_Interpreter
                 p_table.Remove(permission);
             }
             p_table.Add(permission, value);
-            sysop.sysout("[Debug] Permissions Post-Change: Type=" + permission.ToString() + ", Value=" + CheckPermission(permission, p_table).ToString() + ".");
+            
         }
         public static bool CheckPermission(int permission, IDictionary<int, bool> p_table)
         {

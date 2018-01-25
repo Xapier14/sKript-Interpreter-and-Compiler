@@ -39,6 +39,34 @@ namespace Skript_Interpreter
             table.Clear();
             return table;
         }
+        public static IDictionary<int, bool> MakeFlags()
+        {
+            IDictionary<int, bool> table = new Dictionary<int, bool>();
+            table.Clear();
+            return table;
+        }
+        public static void SetDefaultFlags(IDictionary<int, bool> flag_table)
+        {
+            /*
+             * Flags
+             * 00 - Suppress Error Messages
+             * 01 - Enable logging
+             * 02 - Disable Input
+             * 03 - Auto-Compile
+             * 04 - Experimental Features
+             * 05 - Suppress Debug Messages
+             * 06 - Disable Int Table
+             * 07 - Disable String Table
+             * 08 - Disable Variable Tables
+             * 09 - Disable Beep function
+             * 10 - Auto Exception Search to StackExchange
+             */
+            flag_table.Clear();
+            flag_table.Add(00, true);
+            flag_table.Add(05, true);
+            flag_table.Add(09, true);
+            flag_table.Add(04, true);
+        }
     }
     class Program
     {
@@ -89,10 +117,10 @@ namespace Skript_Interpreter
             sysout("");
         }
 
-        static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions)
+        static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
         {
             //Parse and interpret lines here.
-            if (Interpreter.InterpretCommand(line,s_table,i_table,permissions))
+            if (Interpreter.InterpretCommand(line,s_table,i_table,permissions,flags))
             {
 
             } else
@@ -105,9 +133,12 @@ namespace Skript_Interpreter
         {
             Splash.Show();
             //Ask for File
+            
             IDictionary<string, int> i_t = Interp.MakeIntTable();
             IDictionary<string, string> s_t = Interp.MakeStringTable();
             IDictionary<int, bool> perms = Interp.MakePermissions();
+            IDictionary<int, bool> flags = Interp.MakeFlags();
+            Interp.SetDefaultFlags(flags);
             string file = "";
             bool arguments = false;
             int alength = args.Length;
@@ -150,7 +181,7 @@ namespace Skript_Interpreter
                         curline = loadFile(file)[interp];
                         //sysout(curline);
                         //sysout(curline);
-                        lineinterpret(curline,s_t,i_t,perms);
+                        lineinterpret(curline,s_t,i_t,perms,flags);
                         interp++;
                     }
                     sysout("");
