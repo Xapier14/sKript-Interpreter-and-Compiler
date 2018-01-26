@@ -19,7 +19,12 @@ using fw = Skript_Interpreter.FileWrite;
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
  *      
  *      Version Log:
+<<<<<<< HEAD
  *      0.4.1 - 1/26/2018 - Added math function, only add operation added.
+=======
+ *      0.4.1rev2 - 1/26/2018 - Added more math operations, fixed NotInCorrectFormat Error on math function.
+ *      0.4.1 - 1/26/2018 - Added math function, only add operation added. Added SysIn
+>>>>>>> 6e9ac12e6531f0bac6cf2c1bc05907bcec3bfcdc
  *      0.4ext - 1/25/2018 - Fixed Typos, setperm now works properly. Added Flags.(Commands not yet influenced by flags)
  *      0.4 - 1/24/2018 - Added Permissions, now needs permissions for certain functions.
  *      0.3 - 1/19/2018 - Added Int Variables, Now supports string and int variables!
