@@ -10,7 +10,7 @@ using dict = Skript_Interpreter.Dictionary;
 using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
 /* About
- *          sKript Interpreter v0.4.1
+ *          sKript Interpreter v0.4.1rev2
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
  *      GitHub: https://github.com/Xapier14/sKript-Interpreter-and-Compiler
@@ -19,6 +19,7 @@ using fw = Skript_Interpreter.FileWrite;
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
  *      
  *      Version Log:
+ *      0.4.1rev2 - 1/26/2018 - Added more math operations, fixed NotInCorrectFormat Error on math function.
  *      0.4.1 - 1/26/2018 - Added math function, only add operation added.
  *      0.4ext - 1/25/2018 - Fixed Typos, setperm now works properly. Added Flags.(Commands not yet influenced by flags)
  *      0.4 - 1/24/2018 - Added Permissions, now needs permissions for certain functions.
@@ -32,7 +33,6 @@ using fw = Skript_Interpreter.FileWrite;
 *          -Flag Implementation;
 *          -File Operations;
 *          -SysOpMisc Functions;
-*          -Math functions.
 */
 
 namespace Skript_Interpreter
@@ -65,26 +65,78 @@ namespace Skript_Interpreter
                         { //Input Commands here and to MakeDictionary().
                             case "math":
                                 string op = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 2, permissions);
-                                string m1 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 2, permissions);
-                                string m2 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 4), 2, permissions);
+                                string m1 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
+                                string m2 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 4), 1, permissions);
                                 string outvar = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 5), 3, permissions);
                                 int tmpresult = 0;
+                                if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                {
+                                    sysop.sysout("[Math] Raw STR: " + op + ", " + m1 + ", " + m2 + ".");
+                                }
                                 int v1 = Convert.ToInt32(m1);
                                 int v2 = Convert.ToInt32(m2);
-                                if ((v1 == 0 | v2 == 0)==false)
+                                if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                {
+                                    sysop.sysout("[Math] Operation: " + op.ToLower() + ", V1: " + v1.ToString() + ", V2: " + v2.ToString() + ", Result Var: @" + outvar.ToLower() + ".");
+                                }
+                                if ((v1 == 0 | v2 == 0) == false)
                                 {
                                     switch (op.ToLower())
                                     {
                                         case "add":
                                             tmpresult = v1 + v2;
                                             break;
+                                        case "sub":
+                                            tmpresult = v1 - v2;
+                                            break;
+                                        case "mul":
+                                            tmpresult = v1 * v2;
+                                            break;
+                                        case "div":
+                                            tmpresult = v1 / v2;
+                                            break;
+                                        case "mod":
+                                            tmpresult = v1 % 2;
+                                            break;
+                                        case "exp":
+                                            tmpresult = v1 ^ v2;
+                                            break;
+                                        case "sqr":
+                                            tmpresult = Convert.ToInt32(Math.Sqrt(Convert.ToDouble(v1)));
+                                            break;
                                     }
-                                    v.StoreInt(int_table, outvar, tmpresult);
+                                    if (Permissions.CheckPermission(Permissions.Variables, permissions))
+                                    {
+                                        if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                        {
+                                            sysop.sysout("[Math] Result: " + tmpresult.ToString() + ".");
+                                        }
+                                        v.StoreInt(int_table, outvar, tmpresult);
+                                    }
+                                    else if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                    {
+                                        sysop.sysout("[Permissions] Can't do math operation, requires variable permissions.");
+                                    }
+                                    /*
                                     if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
                                     {
                                         sysop.sysout("[Math] Set '" + outvar + "' to " + tmpresult + ", Operation: " + op.ToLower() + ".");
                                     }
+                                    */
+                                }
+                                else
+                                {
+                                    if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                    {
+                                        sysop.sysout("[Math] Non-valid variables! Cannot do operation.");
+                                    }
                                 }//Math Function
+                                break;
+                            case "str2int":
+                                string var_name_2int = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
+                                string var_name_intname = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
+                                int var2store = Convert.ToInt32(v.GetString(string_table, var_name_2int));
+                                v.StoreInt(int_table, var_name_intname, var2store);
                                 break;
                             case "setperm":
                                 string perm = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
@@ -103,6 +155,15 @@ namespace Skript_Interpreter
                                 {
                                     sysop.sysout("[Flags] Set Flag '" + flag + "' to " + fval + ".");
                                 }
+                                break;
+                            case "sysclear":
+                                sysop.clear();
+                                break;
+                            case "sysin":
+                                string msg_in = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 2, permissions);
+                                string varname = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 2, permissions);
+                                string input = sysop.sysin(msg_in);
+                                v.StoreString(string_table, varname, input);
                                 break;
                             case "sysout":
                                 string msg = strop.GetWord(line, 2);
@@ -185,10 +246,14 @@ namespace Skript_Interpreter
                 Console.Beep();
             }
         }
+        public static void clear()
+        {
+            Console.Clear();
+        }
         public static string sysin(string msg)
         {
             string input = "";
-            Console.WriteLine(msg);
+            Console.Write(msg + " ");
             input = Console.ReadLine();
             return input;
         }
@@ -332,12 +397,15 @@ namespace Skript_Interpreter
             dic.AddFirst("setstr");
             dic.AddFirst("sysout");
             dic.AddFirst("sysout.");
+            dic.AddFirst("sysin");
+            dic.AddFirst("sysclear");
             dic.AddFirst("setperm");
             dic.AddFirst("setflag");
             dic.AddFirst("title");
             dic.AddFirst("beep");
             dic.AddFirst("pause");
             dic.AddFirst("math");
+            dic.AddFirst("str2int");
             return dic;
         }
         public static void DictionaryAdd(LinkedList<string> dic, string word)
@@ -367,6 +435,10 @@ namespace Skript_Interpreter
                 msg = msg.Replace('"'.ToString(),"");
             }
             return msg;
+        }
+        public static int ToInt(object obj)
+        {
+            return Convert.ToInt32(obj);
         }
     }
     class Variables
