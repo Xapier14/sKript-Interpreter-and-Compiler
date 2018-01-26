@@ -195,6 +195,7 @@ namespace Skript_Interpreter
                     pause("Press any key to exit...");
                 }
             }
+            Main(args);
         }  
     }
 }

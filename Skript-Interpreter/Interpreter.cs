@@ -10,13 +10,16 @@ using dict = Skript_Interpreter.Dictionary;
 using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
 /* About
- *          sKript Interpreter v0.4
+ *          sKript Interpreter v0.4.1
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
  *      GitHub: https://github.com/Xapier14/sKript-Interpreter-and-Compiler
  *      Author: Lance Crisang
  *      
+ *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
+ *      
  *      Version Log:
+ *      0.4.1 - 1/26/2018 - Added math function, only add operation added.
  *      0.4ext - 1/25/2018 - Fixed Typos, setperm now works properly. Added Flags.(Commands not yet influenced by flags)
  *      0.4 - 1/24/2018 - Added Permissions, now needs permissions for certain functions.
  *      0.3 - 1/19/2018 - Added Int Variables, Now supports string and int variables!
@@ -58,6 +61,29 @@ namespace Skript_Interpreter
                     {
                         switch (func.ToLower())
                         { //Input Commands here and to MakeDictionary().
+                            case "math":
+                                string op = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 2, permissions);
+                                string m1 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 2, permissions);
+                                string m2 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 4), 2, permissions);
+                                string outvar = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 5), 3, permissions);
+                                int tmpresult = 0;
+                                int v1 = Convert.ToInt32(m1);
+                                int v2 = Convert.ToInt32(m2);
+                                if ((v1 == 0 | v2 == 0)==false)
+                                {
+                                    switch (op.ToLower())
+                                    {
+                                        case "add":
+                                            tmpresult = v1 + v2;
+                                            break;
+                                    }
+                                    v.StoreInt(int_table, outvar, tmpresult);
+                                    if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                    {
+                                        sysop.sysout("[Math] Set '" + outvar + "' to " + tmpresult + ", Operation: " + op.ToLower() + ".");
+                                    }
+                                }//Math Function
+                                break;
                             case "setperm":
                                 string perm = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
                                 string val = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
@@ -309,6 +335,7 @@ namespace Skript_Interpreter
             dic.AddFirst("title");
             dic.AddFirst("beep");
             dic.AddFirst("pause");
+            dic.AddFirst("math");
             return dic;
         }
         public static void DictionaryAdd(LinkedList<string> dic, string word)
