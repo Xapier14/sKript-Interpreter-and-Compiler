@@ -29,8 +29,10 @@ using fw = Skript_Interpreter.FileWrite;
  */
 /* Notes
 *      To Do:
-*          -Flag Implementation
-*          -Math functions;
+*          -Flag Implementation;
+*          -File Operations;
+*          -SysOpMisc Functions;
+*          -Math functions.
 */
 
 namespace Skript_Interpreter
@@ -54,7 +56,7 @@ namespace Skript_Interpreter
             LinkedList<string> dic = Dictionary.MakeDictionary();
             bool result = false;
             string func = strop.GetWord(line, 1);
-            if (!line.StartsWith("//")){
+            if (!(line.StartsWith("//") | (line.Equals("") | (line==null)))){
                 if (Dictionary.CheckWord(dic, func) || Dictionary.IsComment(line))
                 {
                     try
