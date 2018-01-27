@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 /*
  * Skript Interpreter CMD Interface & Line Reader
- * Version 0.4
+ * Version 0.5
  * 
  */
 namespace Skript_Interpreter
@@ -120,14 +120,9 @@ namespace Skript_Interpreter
         static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
         {
             //Parse and interpret lines here.
-            if (Interpreter.InterpretCommand(line,s_table,i_table,permissions,flags))
-            {
-
-            } else
-            {
-                //sysout("Command not recognized...");
-            }
-            return "";
+            string linecom = Interpreter.InterpretCommand(line, s_table, i_table, permissions, flags);
+            
+            return linecom;
         }
         static void Main(string[] args)
         {
@@ -176,12 +171,39 @@ namespace Skript_Interpreter
                     //sysout("[FILE_OPER] " + loadFile(file));
                     int interp = 0;
                     string curline = "";
+                    string linecommand = "";
+                    int goline = -1;
+                    string _2ndexec = "";
                     while (interp != numLine(file))
                     {
                         curline = loadFile(file)[interp];
                         //sysout(curline);
                         //sysout(curline);
-                        lineinterpret(curline,s_t,i_t,perms,flags);
+                        linecommand = lineinterpret(curline, s_t, i_t, perms, flags);
+                        if (!(linecommand == ""))
+                        {
+                            if (linecommand.StartsWith("|go|"))
+                            {
+                                goline = Convert.ToInt32(linecommand.Remove(0, 4));
+                                if (goline > -1)
+                                {
+                                    interp = goline - 1;
+                                }
+                            }
+                            if (linecommand.StartsWith("|exec|"))
+                            {
+                                _2ndexec = lineinterpret(linecommand.Remove(0, 6), s_t, i_t, perms, flags);
+                                if (_2ndexec.StartsWith("|go|"))
+                                {
+                                    goline = Convert.ToInt32(_2ndexec.Remove(0, 4));
+                                    if (goline > -1)
+                                    {
+                                        interp = goline - 1;
+                                    }
+                                }
+                            }
+                        }
+                        
                         interp++;
                     }
                     sysout("");

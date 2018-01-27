@@ -10,7 +10,7 @@ using dict = Skript_Interpreter.Dictionary;
 using t = Skript_Interpreter.Tools;
 using fw = Skript_Interpreter.FileWrite;
 /* About
- *          sKript Interpreter v0.4.1rev2
+ *          sKript Interpreter v0.5
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
  *      GitHub: https://github.com/Xapier14/sKript-Interpreter-and-Compiler
@@ -19,6 +19,7 @@ using fw = Skript_Interpreter.FileWrite;
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
  *      
  *      Version Log:
+ *      0.5 - 1/27/2018 - Added simple if, added sysin.
  *      0.4.1rev2 - 1/26/2018 - Added more math operations, fixed NotInCorrectFormat Error on math function.
  *      0.4.1 - 1/26/2018 - Added math function, only add operation added. Added SysIn
  *      0.4ext - 1/25/2018 - Fixed Typos, setperm now works properly. Added Flags.(Commands not yet influenced by flags)
@@ -29,6 +30,8 @@ using fw = Skript_Interpreter.FileWrite;
  *      
  */
 /* Notes
+ *     I will begin making the compiler when this project releases at v1.0.
+ *     
 *      To Do:
 *          -Flag Implementation;
 *          -File Operations;
@@ -51,10 +54,10 @@ namespace Skript_Interpreter
             }
             return result;
         }
-        public static bool InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
+        public static string InterpretCommand(string line, IDictionary<string,string> string_table, IDictionary<string, int> int_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
         {
             LinkedList<string> dic = Dictionary.MakeDictionary();
-            bool result = false;
+            string result = "";
             string func = strop.GetWord(line, 1);
             if (!(line.StartsWith("//") | (line.Equals("") | (line==null)))){
                 if (Dictionary.CheckWord(dic, func) || Dictionary.IsComment(line))
@@ -217,6 +220,31 @@ namespace Skript_Interpreter
                                     }
                                 }
                                 break;
+                            case "goline":
+                                string line_go = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
+                                int linenum = Convert.ToInt32(line_go);
+                                result = "|go|" + linenum.ToString();
+                                break;
+                            case "if":
+                                string condition = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 2, permissions).ToLower();
+                                string ifv1 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 3, permissions);
+                                string ifv2 = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 4), 3, permissions);
+                                string ifline = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 5), 2, permissions);
+                                bool ifresult = false;
+                                switch (condition)
+                                {
+                                    case Conditions.EqualToInsensitive:
+                                        if (ifv1.ToLower() == ifv2.ToLower())
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                }
+                                if (ifresult)
+                                {
+                                    result = "|exec|" + ifline;
+                                }
+                                break;
                         }
                     } catch (Exception ex) {
                         if (!Flags.CheckFlag(Flags.SuppressErrorMsg, flags))
@@ -225,7 +253,6 @@ namespace Skript_Interpreter
                             sysop.sysout("[Error] Faulty line: '" + line + "'.");
                         }
                     }
-                    result = true;
                 } else
                 {
                     if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
@@ -233,6 +260,7 @@ namespace Skript_Interpreter
                         sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
                     }
                 }
+
             }
             return result;
         }
@@ -386,6 +414,17 @@ namespace Skript_Interpreter
             return substr;
         }
     }
+    class Conditions
+    {
+        public const string EqualToInsensitive = "equal_ins";
+        public const string EqualTo = "equal";
+        public const string NotEqualToInsensitive = "nequal_ins";
+        public const string NotEqualTo = "nequal";
+        public const string GreaterThan = "gtrthn";
+        public const string LessThan = "lssthn";
+        public const string GreaterThanOrEqual = "gtreq";
+        public const string LessThanOrEqual = "lsseq";
+    }
     class Dictionary
     {
         public static LinkedList<string> MakeDictionary()
@@ -406,8 +445,11 @@ namespace Skript_Interpreter
             dic.AddFirst("pause");
             dic.AddFirst("math");
             dic.AddFirst("str2int");
+            dic.AddFirst("goline");
+            dic.AddFirst("if");
             return dic;
         }
+        
         public static void DictionaryAdd(LinkedList<string> dic, string word)
         {
             dic.AddFirst(word.ToLower());
