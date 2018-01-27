@@ -36,6 +36,8 @@ using fw = Skript_Interpreter.FileWrite;
 *          -Flag Implementation;
 *          -File Operations;
 *          -SysOpMisc Functions;
+*      Cant Merge correctly with GitHub. :(
+*      Some files are corrupted with random lines. Pls send help.
 */
 
 namespace Skript_Interpreter
