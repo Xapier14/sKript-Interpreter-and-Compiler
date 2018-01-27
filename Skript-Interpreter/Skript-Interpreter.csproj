@@ -75,6 +75,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="builds\sample_skf\hello_world.skf" />
+    <None Include="builds\sample_skf\math_test.skf" />
+    <None Include="builds\sample_skf\test_game.skf" />
     <None Include="Skript-Interpreter_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +88,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="builds\sk_interp_0.5.exe" />
     <Content Include="file.ico" />
     <Content Include="program.ico" />
   </ItemGroup>

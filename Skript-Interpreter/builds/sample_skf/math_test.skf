@@ -1,0 +1,10 @@
+setperm 03 1
+setflag 00 1
+setflag 05 1
+
+setint int1 10
+setint intmul 20
+math mul @int1 @intmul int2
+sysout @int2
+math mul @int2 @intmul int3
+sysout @int3
