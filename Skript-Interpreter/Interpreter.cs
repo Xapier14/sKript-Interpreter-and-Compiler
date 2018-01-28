@@ -19,7 +19,7 @@ using fw = Skript_Interpreter.FileWrite;
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
  *      
  *      Version Log:
- *      
+ *      0.5rev1 - 1/28/2018 - Fixed title func and str2int func.
  *      0.5 - 1/27/2018 - Added simple if, added sysin.
  *      0.4.1rev2 - 1/26/2018 - Added more math operations, fixed NotInCorrectFormat Error on math function.
  *      0.4.1 - 1/26/2018 - Added math function, only add operation added. Added SysIn
@@ -137,9 +137,14 @@ namespace Skript_Interpreter
                                 }//Math Function
                                 break;
                             case "str2int":
-                                string var_name_2int = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
-                                string var_name_intname = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 1, permissions);
-                                int var2store = Convert.ToInt32(v.GetString(string_table, var_name_2int));
+                                string var_name_2int = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 3, permissions);
+                                string var_name_intname = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 3), 2, permissions);
+                                int var2store = Convert.ToInt32(var_name_2int);
+                                if (!Flags.CheckFlag(Flags.SuppressDebugMsg, flags))
+                                {
+                                    sysop.sysout("[STR2INT] Storing '" + var_name_2int + "' at '@"+var_name_intname+"'.");
+                                    sysop.sysout("[STR2INT] Result of conversion: '" + var_name_2int + "' ==> " + "'" + var2store.ToString() + "'.");
+                                }
                                 v.StoreInt(int_table, var_name_intname, var2store);
                                 break;
                             case "setperm":
@@ -182,7 +187,7 @@ namespace Skript_Interpreter
                                 sysop.sysout("");
                                 break;
                             case "title":
-                                sysop.title(v.SubstituteVars(string_table, int_table, t.RemoveQuotes(strop.strdiv(line, func)), 3, permissions));
+                                sysop.title(v.SubstituteVars(string_table, int_table, t.RemoveQuotes(strop.GetWord(line, 2)), 3, permissions).ToString());
                                 break;
                             case "beep":
                                 string amount = v.SubstituteVars(string_table, int_table, strop.GetWord(line, 2), 1, permissions);
