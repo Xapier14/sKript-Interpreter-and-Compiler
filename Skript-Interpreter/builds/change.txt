@@ -1,0 +1,1 @@
+0.5rev1 - fixed str2int.

@@ -1,0 +1,11 @@
+setperm 03 1
+setflag 00 1
+setflag 05 1
+sysout "Set operation: add, sub, mul, div, exp, sqr, mod."
+sysin "Operation :" s_operation
+sysin "Var1:" s_v1
+sysin "Var2:" s_v2
+str2int @s_v1 i_v1
+str2int @s_v2 i_v2
+math @s_operation @i_v1 @i_v2 result
+sysout "Result: @result"

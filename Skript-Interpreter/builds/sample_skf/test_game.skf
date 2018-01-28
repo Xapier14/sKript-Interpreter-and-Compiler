@@ -1,45 +1,49 @@
 //Text Adventure Game
-setflag 00 1
+setflag 05 0
 //sKript Sample file. For use with sk_interp.exe version 0.5+
-setflag 05 1
+sysclear
 //Permissions
 setperm 03 1
-//DO NOT CHANGE LINE POSITIONINGS ANYWHERE IN THIS FILE! CHANGING OR ADDING A NEW LINE WILL DISRUPT GOLINE FUNCTIONS
-//title Text Adv. Game written in sKript - Character Creation
+//DO NOT CHANGE LINE POSITIONINGS ANYWHERE IN THIS FILE! REMOVING OR ADDING A NEW LINE WILL DISRUPT GOLINE FUNCTIONS
+title "Text Adv. Game written in sKript - Character Creation"
 //Character Creation
 sysout "Character Creation"
 sysin "Name:" s_name
 sysin "Age:" s_age
 str2int @s_age i_age
-sysclear
+
 
 //Inn
-//title Text Adv. Game written in sKript - Game - Name: @name - Age: @age
+title "Text Adv. Game written in sKript - Game - Name: @s_name - Age: @i_age"
 sysout "You wake up at an inn with no memories..."
 sysout "You hear someone knocking at the door, yelling."
 sysin "You:" act
 if equal_ins @act "answer" "goline 27"
-if equal_ins @act "open" "goline 36"
+if equal_ins @act "open" "goline 37"
 sysout "You can't @act ."
 sysout.
 goline 16
 
 //Inn_ Answer Door
+sysout.
 sysout "You answer the door, but the knocking sound was gone.."
 sysout "You hear a piano playing outside."
 sysin "You:" act
-if equal_ins @act "go outside" "goline 43"
+if equal_ins @act "go outside" "goline 45"
 sysout "You can't @act ."
 sysout.
 goline 27
 
 //Inn_ Open Door
+sysout.
 sysout "You open the door, only to find a man with a shotgun aimed at your head."
 sysout "He pulls the trigger and you die..."
 sysout.
 //Player dies...
-goline 1
+goline 47
 
 //Inn Lobby
+sysout.
 sysout "You go outside the inn..."
 
+pause "Script is incomplete, this is a Proof-Of-Concept. Thanks for playing, @name"
