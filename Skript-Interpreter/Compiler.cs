@@ -4,6 +4,15 @@ using System.Text;
 
 namespace Skript_Compiler
 {
+    /*
+     * 
+     * sKript Compiler v1.0
+     * 
+     * Notes:
+     *      -Mostly the same funcs as Interpreter.cs but instead of executing them, it writes it to a *.cs file.
+     *      -Variable tables are no longer needed as those are handled by cs. (Will cause issues when using int when string is required, ex: sysout(Writeline();).)
+     * 
+     */
     class Compiler
     {
         //Skript -> C# -> EXE
@@ -27,5 +36,13 @@ namespace Skript_Compiler
         {
 
         }
+    }
+    class SysOp
+    {
+
+    }
+    class StrOp
+    {
+
     }
 }

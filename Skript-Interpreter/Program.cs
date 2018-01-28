@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 /*
  * Skript Interpreter CMD Interface & Line Reader
- * Version 0.5
+ * Version 0.5.1
  * 
+ *  Log:
+ *      0.5.1 - 1/28/2018 - Fixed LineReader Memory Issue
  */
 namespace Skript_Interpreter
 {
@@ -21,6 +23,26 @@ namespace Skript_Interpreter
     }
     class Interp
     {
+        public static string Re_Execute(string linecommand, int goline, int interp, string _2ndexec, IDictionary<string, string> str_t, IDictionary<string, int> int_t, IDictionary<int,bool> perm_t, IDictionary<int,bool> flag_t)
+        {
+            string ret = "";
+            if (!(linecommand == ""))
+            {
+                if (linecommand.StartsWith("|go|"))
+                {
+                    goline = Convert.ToInt32(linecommand.Remove(0, 4));
+                    if (goline > -1)
+                    {
+                        interp = goline - 1;
+                    }
+                }
+                if (linecommand.StartsWith("|exec|"))
+                {
+                    ret = Program.lineinterpret(linecommand.Remove(0, 6), str_t, int_t, perm_t, flag_t);
+                }
+            }
+            return ret;
+        }
         public static IDictionary<string, string> MakeStringTable()
         {
             IDictionary<string, string> table = new Dictionary<string, string>();
@@ -78,6 +100,7 @@ namespace Skript_Interpreter
             {
                 ret++;
             }
+            file.Close();
             return ret;
         }
 
@@ -94,6 +117,7 @@ namespace Skript_Interpreter
                 //sysout(fileline[no]);
                 no++;
             }
+            file.Close();
             return fileline;
         }
 
@@ -117,7 +141,7 @@ namespace Skript_Interpreter
             sysout("");
         }
 
-        static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
+        public static string lineinterpret(string line,IDictionary<string, string> s_table, IDictionary<string, int> i_table, IDictionary<int, bool> permissions, IDictionary<int, bool> flags)
         {
             //Parse and interpret lines here.
             string linecom = Interpreter.InterpretCommand(line, s_table, i_table, permissions, flags);

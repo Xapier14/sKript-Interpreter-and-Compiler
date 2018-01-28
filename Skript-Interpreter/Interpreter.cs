@@ -19,6 +19,7 @@ using fw = Skript_Interpreter.FileWrite;
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
  *      
  *      Version Log:
+ *      
  *      0.5 - 1/27/2018 - Added simple if, added sysin.
  *      0.4.1rev2 - 1/26/2018 - Added more math operations, fixed NotInCorrectFormat Error on math function.
  *      0.4.1 - 1/26/2018 - Added math function, only add operation added. Added SysIn
@@ -188,7 +189,8 @@ namespace Skript_Interpreter
                                 sysop.beep(Convert.ToInt32(amount));
                                 break;
                             case "pause":
-
+                                string pmsg = v.SubstituteVars(string_table,int_table,t.RemoveQuotes(strop.strdiv(line,func)), 3, permissions);
+                                sysop.pause(pmsg);
                                 break;
                             case "setint":
                                 if (Permissions.CheckPermission(Permissions.Variables, permissions))
@@ -239,7 +241,51 @@ namespace Skript_Interpreter
                                             ifresult = true;
                                         }
                                         break;
-                                }
+                                    case Conditions.EqualTo:
+                                        if (ifv1 == ifv2)
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+
+                                    case Conditions.NotEqualToInsensitive:
+                                        if (!(ifv1.ToLower() == ifv2.ToLower()))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                    case Conditions.NotEqualTo:
+                                        if (!(ifv1 == ifv2))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                    case Conditions.GreaterThan:
+                                        if (Convert.ToInt32(ifv1) > Convert.ToInt32(ifv2))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                    case Conditions.GreaterThanOrEqual:
+                                        if (Convert.ToInt32(ifv1) >= Convert.ToInt32(ifv2))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                    case Conditions.LessThan:
+                                        if (Convert.ToInt32(ifv1) < Convert.ToInt32(ifv2))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+                                    case Conditions.LessThanOrEqual:
+                                        if (Convert.ToInt32(ifv1) <= Convert.ToInt32(ifv2))
+                                        {
+                                            ifresult = true;
+                                        }
+                                        break;
+
+                                }//IF CONDITION SELECTION
                                 if (ifresult)
                                 {
                                     result = "|exec|" + ifline;
@@ -251,7 +297,7 @@ namespace Skript_Interpreter
                         {
                             sysop.sysout("[Error] Error executing '" + func.ToLower() + "'. Exception: '" + ex.ToString() + "'.");
                             sysop.sysout("[Error] Faulty line: '" + line + "'.");
-                        }
+                        }//Error
                     }
                 } else
                 {
@@ -259,7 +305,7 @@ namespace Skript_Interpreter
                     {
                         sysop.sysout("Command '" + strop.GetWord(line, 1) + "' not recognized...");
                     }
-                }
+                }//Command Not Recognized
 
             }
             return result;
@@ -298,7 +344,7 @@ namespace Skript_Interpreter
         public static void pause(string msg)
         {
             Console.WriteLine(msg);
-            Console.ReadKey();
+            Console.ReadLine();
         }
         public static void end(int ecode)
         {
@@ -447,9 +493,9 @@ namespace Skript_Interpreter
             dic.AddFirst("str2int");
             dic.AddFirst("goline");
             dic.AddFirst("if");
+            dic.AddFirst("pause");
             return dic;
         }
-        
         public static void DictionaryAdd(LinkedList<string> dic, string word)
         {
             dic.AddFirst(word.ToLower());
