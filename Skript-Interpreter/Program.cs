@@ -1,23 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 /*
  * Skript Interpreter CMD Interface & Line Reader
- * Version 0.5.1
+ * Version 0.6
  * 
  *  Log:
+ *      0.6 - 2/7/2018 - New Splash, Re-did Compile mode.
  *      0.5.1 - 1/28/2018 - Fixed LineReader Memory Issue
  */
 namespace Skript_Interpreter
 {
     class Splash
     {
+        static void WriteBlank(int length)
+        {
+            int i = 0;
+            string str = "";
+            if (length > 0)
+            {
+                while (i < length)
+                {
+                    str = str + " ";
+                    i++;
+                }
+                Console.WriteLine(str);
+            }
+        }
         public static void Show()
         {
             Console.Clear();
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
             string ver = fvi.FileVersion;
-            Console.WriteLine("sKript Interpreter v" + ver + ", Copyright (c) 2018 - Lance Crisang");
+            Console.WriteLine("");
+            var dc = Console.ForegroundColor;
+            var bc = Console.BackgroundColor;
+            var fc = ConsoleColor.Cyan;
+            var vc = ConsoleColor.Green;
+            string s1 = "  sKript Interpreter(";
+            string s2 = "v0.5r1";
+            string s3 = ") + Compiler(";
+            string s4 = "v0.1";
+            string s5 = ") ";
+            string s6 = "v" + ver;
+            string s7 = ", Copyright(c) 2018 - Lance Crisang  ";
+            string fulls = s1 + s2 + s3 + s4 + s5 + s6 + s7;
+            int slength = fulls.Length;
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
+            WriteBlank(slength);
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            WriteBlank(slength);
+            Console.Write(s1);
+            Console.ForegroundColor = vc;
+            Console.Write(s2);
+            Console.ForegroundColor = fc;
+            Console.Write(s3);
+            Console.ForegroundColor = vc;
+            Console.Write(s4);
+            Console.ForegroundColor = fc;
+            Console.Write(s5);
+            Console.ForegroundColor = vc;
+            Console.Write(s6);
+            Console.ForegroundColor = fc;
+            Console.WriteLine(s7);
+            WriteBlank(slength);
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
+            WriteBlank(slength);
+            Console.ForegroundColor = dc;
+            Console.BackgroundColor = bc;
             Console.WriteLine("");
         }
     }
@@ -95,7 +147,7 @@ namespace Skript_Interpreter
         static int numLine(string file_location)
         {
             int ret = 0;
-            System.IO.StreamReader file = new System.IO.StreamReader(@file_location);
+            StreamReader file = new StreamReader(@file_location);
             while (file.ReadLine() != null)
             {
                 ret++;
@@ -108,7 +160,7 @@ namespace Skript_Interpreter
         {
             int no = 0;
             string line = "";
-            System.IO.StreamReader file = new System.IO.StreamReader(@file_location);
+            StreamReader file = new StreamReader(@file_location);
             string[] fileline = new string[numLine(file_location)];
             //sysout("Reading Lines...");
             while ((line = file.ReadLine()) != null)
@@ -171,18 +223,45 @@ namespace Skript_Interpreter
             bool exists = System.IO.File.Exists(file);
             if (arguments & alength > 1)
             {
-                if (args[1].ToLower() == "compile")
+                switch (args[1].ToLower())
                 {
-                    string destination = "";
-                    if (args.Length > 2)
-                    {
-                        destination = args[2];
-                    }
-                    else
-                    {
-                        destination = sysin("File Destination:");
-                    }
-                    FileWrite.Compile(file, destination);
+                    case "compile":
+                        sysout("SKF Translate & Compile Mode.");
+                        sysout("    -Be sure to use an existing directory for the destination address.");
+                        sysout("");
+                        string dest = Directory.GetCurrentDirectory() + "\\output.exe";
+                        if (arguments & alength > 2)
+                        {
+                            dest = args[2];
+                        } else
+                        {
+                            dest = sysin("File Destination:");
+                        }
+                        Console.WriteLine("Compiling...");
+                        if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\temp"))
+                        {
+                            Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\temp");
+                        }
+                        if (File.Exists(Directory.GetCurrentDirectory() + "\\temp\tmp.cs"))
+                        {
+                            File.Delete(Directory.GetCurrentDirectory() + "\\temp\\tmp.cs");
+                        }
+                        if (File.Exists(Directory.GetCurrentDirectory() + "\\temp\tmp.exe"))
+                        {
+                            File.Delete(Directory.GetCurrentDirectory() + "\\temp\\tmp.exe");
+                        }
+                        Skript_Compiler.Compiler.StartCompile(file, Directory.GetCurrentDirectory() + "\\temp\\tmp.cs", dest);
+                        Console.Write("Press enter to continue...");
+                        Console.ReadLine();
+                        Environment.Exit(0);
+                        break;
+                    case "maketest":
+                        StreamWriter testfile = new StreamWriter("test.txt");
+                        testfile.WriteLine("1| This is a test file.");
+                        testfile.WriteLine("2| This translator uses StreamWriter & StreamReader.");
+                        testfile.Close();
+                        Environment.Exit(0);
+                        break;
                 }
             }
             else

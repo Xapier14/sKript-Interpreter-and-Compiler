@@ -31,7 +31,7 @@ using fw = Skript_Interpreter.FileWrite;
  *      
  */
 /* Notes
- *     I will begin making the compiler when this project releases at v1.0.
+ *     I will begin finalizing the compiler when this project releases at v1.0.
  *     
 *      To Do:
 *          -Flag Implementation;
@@ -194,7 +194,7 @@ namespace Skript_Interpreter
                                 sysop.beep(Convert.ToInt32(amount));
                                 break;
                             case "pause":
-                                string pmsg = v.SubstituteVars(string_table,int_table,t.RemoveQuotes(strop.strdiv(line,func)), 3, permissions);
+                                string pmsg = v.SubstituteVars(string_table,int_table,t.RemoveQuotes(strop.GetWord(line,2)), 3, permissions);
                                 sysop.pause(pmsg);
                                 break;
                             case "setint":
@@ -365,7 +365,7 @@ namespace Skript_Interpreter
             return ret;
         }
     }
-    class FileWrite
+    class FileWrite //Not used.
     {
         public static bool Compile(string file, string destination)
         {
@@ -375,8 +375,8 @@ namespace Skript_Interpreter
             string fileloc = destination + "\\" + file;
 
             //Write compile code here.
-            Compiler.MakeCSFile(fileloc);
-            int curline = Compiler.GetCurrentLine(fileloc);
+            //Compiler.MakeCSFile(fileloc);
+            //int curline = Compiler.GetCurrentLine(fileloc);
 
             return result;
         }
