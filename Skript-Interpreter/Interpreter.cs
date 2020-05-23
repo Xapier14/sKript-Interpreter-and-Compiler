@@ -13,7 +13,7 @@ using fw = Skript_Interpreter.FileWrite;
  *          sKript Interpreter v0.5
  *      Copyright(c) 2018 - Lance Crisang
  *      Do not redistribute source code on other websites.
- *      GitHub: https://github.com/Xapier14/sKript-Interpreter-and-Compiler
+ *      GitHub: https://github.com/Xapier14/Skript-Interpreter-and-Compiler
  *      Author: Lance Crisang
  *      
  *      This was developed as a simple project aimed at improving my skills. This my first project to publish on GitHub.
@@ -695,7 +695,7 @@ namespace Skript_Interpreter
              * 07 - Disable String Table
              * 08 - Disable Variable Tables
              * 09 - Disable Beep function
-             * 10 - Auto Exception Search to StackExchange
+             * 10 - Auto Exception Search to StackExchange, lol
              */
             flag_table.Clear();
             flag_table.Add(00, true);
